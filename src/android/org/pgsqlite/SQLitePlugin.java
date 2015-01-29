@@ -7,12 +7,9 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
-import android.database.Cursor;
 import android.database.CursorWindow;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
+import net.sqlcipher.Cursor;
+import net.sqlcipher.database.*;
 
 import android.util.Base64;
 import android.util.Log;
@@ -93,13 +90,15 @@ public class SQLitePlugin extends CordovaPlugin {
         boolean status = true;
         JSONObject o;
         String dbname;
+        String password;
 
         switch (action) {
             case open:
                 o = args.getJSONObject(0);
                 dbname = o.getString("name");
+                password = o.getString("password");
                 // open database and start reading its queue
-                this.startDatabase(dbname, cbc);
+                this.startDatabase(dbname, password, cbc);
                 break;
 
             case close:
@@ -193,7 +192,7 @@ public class SQLitePlugin extends CordovaPlugin {
     // LOCAL METHODS
     // --------------------------------------------------------------------------
 
-    private void startDatabase(String dbname, CallbackContext cbc) {
+    private void startDatabase(String dbname, String password, CallbackContext cbc) {
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
         // If we re-use the existing DBRunner it might be in the process of closing...
         DBRunner r = dbrmap.get(dbname);
@@ -205,7 +204,7 @@ public class SQLitePlugin extends CordovaPlugin {
         	// than orphaning the old DBRunner.
             cbc.success();
         } else {
-            r = new DBRunner(dbname, cbc);
+            r = new DBRunner(dbname, password, cbc);
             dbrmap.put(dbname, r);
             this.cordova.getThreadPool().execute(r);
         }
@@ -215,8 +214,9 @@ public class SQLitePlugin extends CordovaPlugin {
      *
      * @param dbName   The name of the database file
      */
-    private SQLiteDatabase openDatabase(String dbname, CallbackContext cbc) throws Exception {
+    private SQLiteDatabase openDatabase(String dbname, String password, CallbackContext cbc) throws Exception {
         try {
+            SQLiteDatabase.loadLibs(this.cordova.getActivity());
             if (this.getDatabase(dbname) != null) {
                 // this should not happen - should be blocked at the execute("open") level
                 cbc.error("database already open");
@@ -230,8 +230,8 @@ public class SQLitePlugin extends CordovaPlugin {
             }
 
             Log.v("info", "Open sqlite db: " + dbfile.getAbsolutePath());
-
-            SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
+ 
+            SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, password, null);
 
             cbc.success();
 
@@ -312,7 +312,7 @@ public class SQLitePlugin extends CordovaPlugin {
         if (android.os.Build.VERSION.SDK_INT >= 11) {
             // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 16 was lying:
             try {
-            	return SQLiteDatabase.deleteDatabase(dbfile);
+            	return dbfile.delete(); //SQLiteDatabase.deleteDatabase(dbfile);
             } catch (Exception e) {
                 Log.e(SQLitePlugin.class.getSimpleName(), "couldn't delete because old SDK_INT", e);
                 return deleteDatabasePreHoneycomb(dbfile);
@@ -392,7 +392,7 @@ public class SQLitePlugin extends CordovaPlugin {
                             bindArgsToStatement(myStatement, jsonparams[i]);
                         }
 
-                        int rowsAffected = -1; // (assuming invalid)
+                        long rowsAffected = -1; // (assuming invalid)
 
                         // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
                         try {
@@ -763,20 +763,22 @@ public class SQLitePlugin extends CordovaPlugin {
 
     private class DBRunner implements Runnable {
         final String dbname;
+        final String password;
         final BlockingQueue<DBQuery> q;
         final CallbackContext openCbc;
 
         SQLiteDatabase mydb;
 
-        DBRunner(final String dbname, CallbackContext cbc) {
+        DBRunner(final String dbname, final String password, CallbackContext cbc) {
             this.dbname = dbname;
+            this.password = password;
             this.q = new LinkedBlockingQueue<DBQuery>();
             this.openCbc = cbc;
         }
 
         public void run() {
             try {
-                this.mydb = openDatabase(dbname, this.openCbc);
+                this.mydb = openDatabase(dbname, password, this.openCbc);
             } catch (Exception e) {
                 Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error, stopping db thread", e);
                 dbrmap.remove(dbname);
