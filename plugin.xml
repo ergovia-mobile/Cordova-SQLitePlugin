@@ -34,6 +34,17 @@
             </feature>
         </config-file>
 
+        <source-file src="libs/armeabi/libdatabase_sqlcipher.so" target-dir="libs/armeabi" framework="true" />
+        <source-file src="libs/armeabi/libsqlcipher_android.so" target-dir="libs/armeabi" framework="true" />
+        <source-file src="libs/armeabi/libstlport_shared.so" target-dir="libs/armeabi" framework="true" />
+        <source-file src="libs/armeabi-v7a/libdatabase_sqlcipher.so" target-dir="libs/armeabi-v7a" framework="true" />
+        <source-file src="libs/armeabi-v7a/libsqlcipher_android.so" target-dir="libs/armeabi-v7a" framework="true" />
+        <source-file src="libs/armeabi-v7a/libstlport_shared.so" target-dir="libs/armeabi-v7a" framework="true" />
+        <source-file src="libs/x86/libdatabase_sqlcipher.so" target-dir="libs/x86" framework="true" />
+        <source-file src="libs/x86/libsqlcipher_android.so" target-dir="libs/x86" framework="true" />
+        <source-file src="libs/x86/libstlport_shared.so" target-dir="libs/x86" framework="true" />
+        <source-file src="libs/guava-r09.jar" target-dir="libs" framework="true" />
+        <source-file src="libs/sqlcipher.jar" target-dir="libs" framework="true" />
         <source-file src="src/android/org/pgsqlite/SQLitePlugin.java" target-dir="src/org/pgsqlite"/>
     </platform>
 
