@@ -100,15 +100,16 @@
     });
   };
 
+
   SQLitePlugin.prototype.open = function(success, error) {
     var onSuccess;
     onSuccess = (function(_this) {
       return function() {
+        _this.openDBs[_this.dbname] = true;
         return success(_this);
       };
     })(this);
     if (!(this.dbname in this.openDBs)) {
-      this.openDBs[this.dbname] = true;
       cordova.exec(onSuccess, error, "SQLitePlugin", "open", [this.openargs]);
     } else {
 
