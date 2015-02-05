@@ -35,9 +35,6 @@
         </config-file>
 
         <source-file src="assets/icudt46l.zip" target-dir="assets" framework="true" />
-        <source-file src="libs/armeabi/libdatabase_sqlcipher.so" target-dir="libs/armeabi" framework="true" />
-        <source-file src="libs/armeabi/libsqlcipher_android.so" target-dir="libs/armeabi" framework="true" />
-        <source-file src="libs/armeabi/libstlport_shared.so" target-dir="libs/armeabi" framework="true" />
         <source-file src="libs/armeabi-v7a/libdatabase_sqlcipher.so" target-dir="libs/armeabi-v7a" framework="true" />
         <source-file src="libs/armeabi-v7a/libsqlcipher_android.so" target-dir="libs/armeabi-v7a" framework="true" />
         <source-file src="libs/armeabi-v7a/libstlport_shared.so" target-dir="libs/armeabi-v7a" framework="true" />
