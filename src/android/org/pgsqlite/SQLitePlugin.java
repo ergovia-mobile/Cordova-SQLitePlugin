@@ -649,7 +649,13 @@ public class SQLitePlugin extends CordovaPlugin {
                                                 CallbackContext cbc) throws Exception {
         JSONObject rowsResult = new JSONObject();
 
+
+
         Cursor cur = null;
+
+        try {
+
+
         try {
             String[] params = null;
 
@@ -712,6 +718,16 @@ public class SQLitePlugin extends CordovaPlugin {
 
         if (cur != null) {
             cur.close();
+        }
+
+        } catch(Exception e) {
+
+            if (cur != null) {
+                cur.close();
+            }
+
+            e.printStackTrace();[
+
         }
 
         return rowsResult;
