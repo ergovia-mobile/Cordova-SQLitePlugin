@@ -35,6 +35,7 @@
         </config-file>
 
         <source-file src="src/android/org/pgsqlite/SQLitePlugin.java" target-dir="src/org/pgsqlite"/>
+
     </platform>
 
     <!-- android -->
@@ -53,6 +54,20 @@
         </config-file>
 
         <source-file src="src/android/org/pgsqlite/SQLitePlugin.java" target-dir="src/org/pgsqlite"/>
+
+        <!-- SQLCipher distribution for Android: -->
+        <source-file src="src/android/sqlcipher/assets/icudt46l.zip" target-dir="assets"/>
+        <source-file src="src/android/sqlcipher/libs/sqlcipher.jar" target-dir="libs"/>
+        <source-file src="src/android/sqlcipher/libs/sqlcipher-javadoc.jar" target-dir="libs"/>
+        <source-file src="src/android/sqlcipher/libs/armeabi/libdatabase_sqlcipher.so" target-dir="libs/armeabi"/>
+        <source-file src="src/android/sqlcipher/libs/armeabi/libsqlcipher_android.so" target-dir="libs/armeabi"/>
+        <source-file src="src/android/sqlcipher/libs/armeabi/libstlport_shared.so" target-dir="libs/armeabi"/>
+        <source-file src="src/android/sqlcipher/libs/armeabi-v7a/libdatabase_sqlcipher.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/android/sqlcipher/libs/armeabi-v7a/libsqlcipher_android.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/android/sqlcipher/libs/armeabi-v7a/libstlport_shared.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/android/sqlcipher/libs/x86/libdatabase_sqlcipher.so" target-dir="libs/x86"/>
+        <source-file src="src/android/sqlcipher/libs/x86/libsqlcipher_android.so" target-dir="libs/x86"/>
+        <source-file src="src/android/sqlcipher/libs/x86/libstlport_shared.so" target-dir="libs/x86"/>
     </platform>
 
     <!-- ios -->
@@ -66,7 +81,11 @@
         <!-- Note: the ios src is based off src/ios implicitly -->
         <header-file src="src/ios/SQLitePlugin.h" />
         <source-file src="src/ios/SQLitePlugin.m" />
-        <framework src="libsqlite3.dylib" />
+
+        <!-- SQLCipher source distribution and Security.framework dependency for iOS: -->
+        <header-file src="src/ios/sqlcipher/sqlite3.h" />
+        <source-file src="src/ios/sqlcipher/sqlite3.c" />
+        <framework src="Security.framework" />
     </platform>
 
     <!-- wp8 [should work but not tested on wp7] -->
