@@ -7,12 +7,10 @@
 package org.pgsqlite;
 
 import android.annotation.SuppressLint;
-import android.database.Cursor;
+
 import android.database.CursorWindow;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
+import net.sqlcipher.*;
+import net.sqlcipher.database.*;
 
 import android.util.Base64;
 import android.util.Log;
@@ -98,13 +96,20 @@ public class SQLitePlugin extends CordovaPlugin {
         boolean status = true;
         JSONObject o;
         String dbname;
+        String passwd;
 
         switch (action) {
             case open:
                 o = args.getJSONObject(0);
                 dbname = o.getString("name");
+                passwd = o.getString("password");
 
-                this.openDatabase(dbname, null);
+                if (this.openDatabase(dbname, passwd)) {
+					cbc.success();
+				} else {
+				    cbc.error("database could not be opened, password wrong?");
+				}
+
                 break;
             case close:
                 o = args.getJSONObject(0);
@@ -147,9 +152,15 @@ public class SQLitePlugin extends CordovaPlugin {
 
                 Cursor myCursor = this.getDatabase(dbname).rawQuery(query, params);
 
-                String result = this.getRowsResultFromQuery(myCursor).getJSONArray("rows").toString();
+                try {
+                    String result = this.getRowsResultFromQuery(myCursor).getJSONArray("rows").toString();
+                    this.sendJavascriptCB("window.SQLitePluginCallback.p1('" + id + "', " + result + ");");
+                } finally {
+                    if (myCursor != null) {
+                        myCursor.close();
+                    }
+                }
 
-                this.sendJavascriptCB("window.SQLitePluginCallback.p1('" + id + "', " + result + ");");
                 break;
             case executeSqlBatch:
             case executeBatchTransaction:
@@ -217,7 +228,11 @@ public class SQLitePlugin extends CordovaPlugin {
      * @param dbname   The name of the database-NOT including its extension.
      * @param password The database password or null.
      */
-    private void openDatabase(String dbname, String password) {
+    private boolean openDatabase(String dbname, String password) {
+
+        SQLiteDatabase.loadLibs(this.cordova.getActivity());
+        boolean status = false;
+
         if (this.getDatabase(dbname) != null) {
             this.closeDatabase(dbname);
         }
@@ -230,9 +245,21 @@ public class SQLitePlugin extends CordovaPlugin {
 
         Log.v("info", "Open sqlite db: " + dbfile.getAbsolutePath());
 
-        SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
+        try {
 
-        dbmap.put(dbname, mydb);
+            SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, password, null);
+            if (mydb != null) {
+            	status = true;
+            	dbmap.put(dbname, mydb);
+            }
+
+        } catch (Exception ex) {
+        	// log & give up:
+        	Log.v("executeSqlBatch", "openDatabase(): Error=" +  ex.getMessage());
+        	ex.printStackTrace();
+        }
+
+        return status;
     }
 
     /**
@@ -266,7 +293,7 @@ public class SQLitePlugin extends CordovaPlugin {
         if (android.os.Build.VERSION.SDK_INT >= 11) {
             // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 16 was lying:
             try {
-                return SQLiteDatabase.deleteDatabase(dbfile);
+                return dbfile.delete(); //SQLiteDatabase.deleteDatabase(dbfile);
             } catch (Exception e) {
                 Log.e(SQLitePlugin.class.getSimpleName(), "couldn't delete because old SDK_INT", e);
                 return deleteDatabasePreHoneycomb(dbfile);
@@ -369,7 +396,7 @@ public class SQLitePlugin extends CordovaPlugin {
                             bindArgsToStatement(myStatement, jsonparams[i]);
                         }
 
-                        int rowsAffected = -1; // (assuming invalid)
+                        long rowsAffected = -1; // (assuming invalid)
 
                         // Use try & catch just in case android.os.Build.VERSION.SDK_INT >= 11 is lying:
                         try {
@@ -385,6 +412,8 @@ public class SQLitePlugin extends CordovaPlugin {
                         } catch (Exception ex) {
                             // Assuming SDK_INT was lying & method not found:
                             // do nothing here & try again with raw query.
+                        } finally {
+                            myStatement.close();
                         }
 
                         if (rowsAffected != -1) {
@@ -413,6 +442,8 @@ public class SQLitePlugin extends CordovaPlugin {
                         ex.printStackTrace();
                         errorMessage = ex.getMessage();
                         Log.v("executeSqlBatch", "SQLiteDatabase.executeInsert(): Error=" + errorMessage);
+                    } finally {
+                        myStatement.close();
                     }
 
                     if (insertId != -1) {
@@ -582,7 +613,11 @@ public class SQLitePlugin extends CordovaPlugin {
                         bindArgsToStatement(statement, subParams);
                     }
 
-                    return (int)statement.simpleQueryForLong();
+                    int result = (int)statement.simpleQueryForLong();
+
+                    statement.close();
+
+                    return result;
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
                     Log.e(SQLitePlugin.class.getSimpleName(), "uncaught", e);
@@ -597,7 +632,11 @@ public class SQLitePlugin extends CordovaPlugin {
                             "SELECT count(*) FROM " + table + where);
                     bindArgsToStatement(statement, subParams);
 
-                    return (int)statement.simpleQueryForLong();
+                    int result =  (int)statement.simpleQueryForLong();
+
+                    statement.close();
+
+                    return result;
                 } catch (Exception e) {
                     // assume we couldn't count for whatever reason, keep going
                     Log.e(SQLitePlugin.class.getSimpleName(), "uncaught", e);
