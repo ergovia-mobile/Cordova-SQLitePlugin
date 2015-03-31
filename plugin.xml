@@ -81,11 +81,7 @@
         <!-- Note: the ios src is based off src/ios implicitly -->
         <header-file src="src/ios/SQLitePlugin.h" />
         <source-file src="src/ios/SQLitePlugin.m" />
-
-        <!-- SQLCipher source distribution and Security.framework dependency for iOS: -->
-        <header-file src="src/ios/sqlcipher/sqlite3.h" />
-        <source-file src="src/ios/sqlcipher/sqlite3.c" />
-        <framework src="Security.framework" />
+        <framework src="libsqlite3.dylib" />
     </platform>
 
     <!-- wp8 [should work but not tested on wp7] -->
