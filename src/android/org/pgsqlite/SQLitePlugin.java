@@ -446,10 +446,12 @@ public class SQLitePlugin extends CordovaPlugin {
                         myStatement.close();
                     }
 
+                    queryResult = new JSONObject();
                     if (insertId != -1) {
-                        queryResult = new JSONObject();
                         queryResult.put("insertId", insertId);
                         queryResult.put("rowsAffected", 1);
+                    } else {
+                        queryResult.put("rowsAffected", 0);
                     }
                 }
 
