@@ -211,11 +211,13 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
                 return;
             }
             else {
-                // Extra for SQLCipher:
-                // const char *key = [@"your_key_here" UTF8String];
-                // if(key != NULL) sqlite3_key(db, key, strlen(key));
+                
+                if([options valueForKey:@"password"] != [NSNull null]) {
+                    const char *key = [[options valueForKey:@"password"] UTF8String];
+                    sqlite3_key(db, key, strlen(key));
+                }
 
-		sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
+                sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
 	
                 // Attempt to read the SQLite master table (test for SQLCipher version):
                 if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
