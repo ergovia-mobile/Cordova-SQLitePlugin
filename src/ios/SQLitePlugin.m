@@ -212,7 +212,7 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
             }
             else {
                 
-                if([options valueForKey:@"password"] != [NSNull null]) {
+                if ([options valueForKey:@"password"] != [NSNull null] && [options valueForKey:@"password"] != NULL) {
                     const char *key = [[options valueForKey:@"password"] UTF8String];
                     sqlite3_key(db, key, strlen(key));
                 }
