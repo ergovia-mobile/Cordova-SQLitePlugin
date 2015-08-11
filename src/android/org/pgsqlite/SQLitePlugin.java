@@ -154,7 +154,7 @@ public class SQLitePlugin extends CordovaPlugin {
 
                 try {
                     String result = this.getRowsResultFromQuery(myCursor).getJSONArray("rows").toString();
-                    this.sendJavascriptCB("window.SQLitePluginCallback.p1('" + id + "', " + result + ");");
+                    //this.sendJavascriptCB("window.SQLitePluginCallback.p1('" + id + "', " + result + ");");
                 } finally {
                     if (myCursor != null) {
                         myCursor.close();
